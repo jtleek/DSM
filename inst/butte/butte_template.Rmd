@@ -45,3 +45,26 @@ for(i in 1:dim(drugRL)[2]){
 	}
 }
 ```
+
+## Present output
+
+```{r output, echo=TRUE}
+heatmap(ddsmat)
+```
+
+## R session information
+
+```{r session info}
+sessionInfo()
+```
+
+SHA-1 hashes for the input data file and the original data frame.
+
+```{r hash information, echo=FALSE}
+cat(sprintf("%s: %s\n", sQuote(datafile), hashfile))
+cat(sprintf("data frame: %s\n", hashdframe))
+```
+
+
+This analysis started on `r format(begin.time)` and was completed on
+`r format(Sys.time())`.
