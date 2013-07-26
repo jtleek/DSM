@@ -1,0 +1,47 @@
+# Template for running drug-disease gene expression profile similarity analysis
+# From Butte et. al., Sci Transl Med 2011
+
+```{r start time, echo=FALSE}
+begin.time <- Sys.time()
+```
+
+## Initialization
+
+Load required packages and source necessary functions.
+
+```{r initialize, echo=TRUE}
+library("GEOquery") # For pulling data from GEO
+library("siggenes") # For running SAM analysis
+library("affyPLM") # For rank normalization of ExpressionSets
+library("cMap2data") # For drug signature ranked lists
+source("butte_helper.R") # Helper functions for analysis
+data(drugRL) # Load the drug ranked list data from cMap
+```
+
+## Read data
+We read in the GEO IDs for the datasets we would like to use for our analysis.
+
+```{r read in data, echo=TRUE}
+geo_id <- read.csv("geo_ids.csv", header=T)
+ids <- geo_id$GDS
+```
+
+Next, we get the list of up- and down-regulated genes via SAM analysis of each specified dataset.
+
+```{r get gene lists, echo=TRUE}
+glist <- sapply(ids,get_gene_list, simplify=F)
+names(glist) <- ids
+```
+
+We now know which genes are up- and down-regulated, and rank them by fold change in expression.
+Using this ranking, we compare each disease signature to each drug signature.
+
+```{r calculate dds, echo=TRUE}
+ddsmat <- matrix(0,dim(drugRL)[2],length(glist),dimnames=c(colnames(drugRL),names(glist))
+
+for(i in 1:dim(drugRL)[2]){
+	for(j in 1:length(glist)){
+		ddsmat[i,j] <- calc_dds(drugRL[,i],glist[[j]])
+	}
+}
+```
