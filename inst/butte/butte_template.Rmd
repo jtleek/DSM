@@ -34,14 +34,16 @@ names(glist) <- ids
 ```
 
 We now know which genes are up- and down-regulated, and rank them by fold change in expression.
-Using this ranking, we compare each disease signature to each drug signature.
+Using this ranking, we compare each disease signature to each drug signature. We also calculate
+a p-value for the observed drug disease score.
 
 ```{r calculate dds, echo=TRUE}
-ddsmat <- matrix(0,dim(drugRL)[2],length(glist),dimnames=c(colnames(drugRL),names(glist))
+ddsmat <- pvals <- matrix(0,dim(drugRL)[2],length(glist),dimnames=c(colnames(drugRL),names(glist))
 
 for(i in 1:dim(drugRL)[2]){
 	for(j in 1:length(glist)){
 		ddsmat[i,j] <- calc_dds(drugRL[,i],glist[[j]])
+		pvals[i,j] <- calc_pval(glist[[j]],ddsmat[i,j])
 	}
 }
 ```

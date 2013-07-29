@@ -85,3 +85,21 @@ calc_dds <- function(drug,dat){
 	# Return the dds
 	ifelse((sign(es_up) + sign(es_down)) == 0, (es_up - es_down),0)
 }
+
+# Calculate p-values.
+# This function produces a p-value for the observed drug disease score
+# by generating a "null" distribution of drug disease scores for each
+# disease signature using random ranks.
+
+# I guess we're assuming the null dist is symmetric...
+# This definitely needs to be changed somehow...need to use Levene's Test...
+
+calc_pval <- function(dat,dds){
+	scores <- vector("numeric",100)
+	for(i in 1:100){
+		drug <- sample(1:length(dat),length(dat),replace=F)
+		scores[i] <- calc_dds(drug,dat)
+	}
+	
+	(length(which(scores > abs(dds))) + length(which(scores < -abs(dds))))/100			
+}
