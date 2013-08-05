@@ -18,33 +18,30 @@ source("butte_helper.R") # Helper functions for analysis
 data(drugRL) # Load the drug ranked list data from cMap
 ```
 
-## Read data
-We read in the GEO IDs for the datasets we would like to use for our analysis.
-
-```{r read in data, echo=TRUE}
-geo_id <- read.csv("geo_ids.csv", header=T)
-ids <- geo_id$GDS
-```
-
-Next, we get the list of up- and down-regulated genes via SAM analysis of each specified dataset.
+We get the list of up- and down-regulated genes via limma analysis of each specified dataset.
 
 ```{r get gene lists, echo=TRUE}
-glist <- sapply(ids,get_gene_list, simplify=F)
+glist <- list()
+for(i in 1:length(ids)){
+	glist[[i]] <- get_gene_list(ids[i])
+}
 names(glist) <- ids
 ```
 
 We now know which genes are up- and down-regulated, and rank them by fold change in expression.
 Using this ranking, we compare each disease signature to each drug signature. We also calculate
-a p-value for the observed drug disease score.
+a p-value and FDR for the observed drug disease score.
 
 ```{r calculate dds, echo=TRUE}
-ddsmat <- pvals <- matrix(0,dim(drugRL)[2],length(glist),dimnames=c(colnames(drugRL),names(glist))
+ddsmat <- pvals <- qvals <- matrix(0,ndrug,length(glist),dimnames=c(colnames(drugRL)[1:ndrug],names(glist))
 
-for(i in 1:dim(drugRL)[2]){
+for(i in 1:ndrug){
 	for(j in 1:length(glist)){
 		ddsmat[i,j] <- calc_dds(drugRL[,i],glist[[j]])
-		pvals[i,j] <- calc_pval(glist[[j]],ddsmat[i,j])
+		pvals[i,j] <- calc_pval(glist[[j]],rownames(drugRL),ddsmat[i,j])
 	}
+	# Get FDR for each pval
+	qvals[,i] <- qvalue(pvals[,i], lambda=0) #B-H correction, for safety
 }
 ```
 
