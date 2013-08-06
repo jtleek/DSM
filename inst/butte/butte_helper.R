@@ -42,8 +42,9 @@ get_gene_list <- function(id){
 		f <- get_annotation(pd)
 	} else if(length(levels(pd[,2])) == 2 & length(levels(pd[,3])) != 2){
 		ans <- ""
+		first <- paste(colnames(pd)[2], " has levels: ", paste(levels(pd[,2]),collapse=", "), ".\n",sep="")
 		while(!(ans %in% c("y","n"))){
-			ans <- readline(prompt=paste("Using", colnames(pd)[2], "for annotation. OK? (y/n)",sep=" "))
+			ans <- readline(prompt=paste(first,"Using ", colnames(pd)[2], " for annotation. OK? (y/n)",sep=""))
 			ans <- tolower(substr(ans,1,1))
 		}
 
@@ -54,8 +55,9 @@ get_gene_list <- function(id){
 		}
 	} else if(length(levels(pd[,2])) != 2 & length(levels(pd[,3])) == 2){
 		ans <- ""
+		first <- paste(colnames(pd)[3], " has levels: ", paste(levels(pd[,3]),collapse=" ,"), ".\n",sep="")
 		while(!(ans %in% c("y","n"))){
-			ans <- readline(prompt=paste("Using", colnames(pd)[3], "for annotation. OK? (y/n)",sep=" "))
+			ans <- readline(prompt=paste(first,"Using ", colnames(pd)[3], " for annotation. OK? (y/n) ",sep=""))
 			ans <- tolower(substr(ans,1,1))
 		}
 
@@ -67,13 +69,16 @@ get_gene_list <- function(id){
 
 	} else {
 		ans <- ""
+		first <- paste(colnames(pd)[2], " has levels: ", paste(levels(pd[,2]),collapse=", "), ".\n",sep="")
+		second <- paste(colnames(pd)[3], " has levels: ", paste(levels(pd[,3]),collapse=", "), ".\n",sep="")
 		while(!(ans %in% c(2,3))){
-			ans <- readline(prompt=paste("Should I use 2:", colnames(pd)[2], "or 3:", colnames(pd)[3], " for annotation? (2/3) ",sep=" "))
+			ans <- readline(prompt=paste(first, second, "Should I use 2: ", colnames(pd)[2], " or 3: ", colnames(pd)[3], " for annotation? (2/3) ",sep=""))
 		}	
 		ans <- as.numeric(ans)
 		f <- pd[,ans]
 	}
 
+	# Remove spaces and 
 	f <- factor(gsub(" ","", f))
 	f <- factor(gsub("[[:punct:]]","",f))
 
@@ -88,7 +93,7 @@ get_gene_list <- function(id){
 	fit2 <- contrasts.fit(fit,cont.matrix)
 	fit2 <- eBayes(fit2)
 
-	tt <- topTable(fit2,number=100000)
+	tt <- topTable(fit2,number=100000) # Just a big number to get all genes
 	tt <- tt[which(tt$adj.P.Val < 0.05),] # This is FDR!
 	output <- tt[,c("Gene.symbol", "logFC")]
 	names(output) <- c("gene", "fold")
