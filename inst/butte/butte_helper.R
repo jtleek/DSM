@@ -88,7 +88,7 @@ get_gene_list <- function(id){
 	fit <- lmFit(test_eset, design)
 
 	ctrst <- paste(levels(f), collapse="-")
-	cont.matrix <- makeContrasts(cc=ctrst,levels=design)
+	cont.matrix <- makeContrasts(contrasts=ctrst,levels=design)
 
 	fit2 <- contrasts.fit(fit,cont.matrix)
 	fit2 <- eBayes(fit2)

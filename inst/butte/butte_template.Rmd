@@ -42,10 +42,10 @@ ddsmat <- pvals <- qvals <- matrix(0,ndrug,length(glist),dimnames=list(colnames(
 for(i in 1:length(glist)){
 	for(j in 1:ndrug){
 		ddsmat[j,i] <- calc_dds(drugRL[,j],glist[[i]])
-		pvals[j,i] <- calc_pval(glist[[i]],rownames(drugRL),ddsmat[i,j])
+		pvals[j,i] <- calc_pval(glist[[i]],rownames(drugRL),ddsmat[j,i])
 	}
 	# Get FDR for each pval
-	qvals[,i] <- qvalue(pvals[,i], lambda=0) #B-H correction, for safety
+	qvals[,i] <- qvalue(pvals[,i], lambda=0)$qvalue #B-H correction, for safety
 }
 ```
 
