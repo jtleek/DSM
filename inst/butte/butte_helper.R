@@ -80,20 +80,14 @@ get_gene_list <- function(id){
 	design <- model.matrix(~0+f)
 	colnames(design) <- levels(f)
 
-	cat("I'm here 1\n")
-
 	fit <- lmFit(test_eset, design)
 
-	cat("I'm here 2\n")
-	ctrst <- as.character(paste(levels(f), collapse="-"))
-	cat("ctrst is", ctrst, "with class", class(ctrst), "\n")
+	ctrst <- paste(levels(f), collapse="-")
 	cont.matrix <- makeContrasts(cc=ctrst,levels=design)
 
-	cat("I'm here 3\n")
 	fit2 <- contrasts.fit(fit,cont.matrix)
 	fit2 <- eBayes(fit2)
 
-	cat("I'm here 4\n")
 	tt <- topTable(fit2,number=100000)
 	tt <- tt[which(tt$adj.P.Val < 0.05),] # This is FDR!
 	output <- tt[,c("Gene.symbol", "logFC")]

@@ -5,5 +5,5 @@
 # connectivity map dataset).
 butte_runner <- function(ids, id_types="GDS", ndrug=10){
 	knit("butte_template.Rmd")
-	markdownToHTML("butte_template.md")	
+	markdownToHTML("butte_template.md",output="butte_analysis.html")	
 }

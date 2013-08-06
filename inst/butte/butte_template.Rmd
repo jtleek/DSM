@@ -1,5 +1,5 @@
-# Template for running drug-disease gene expression profile similarity analysis
-# From Butte et. al., Sci Transl Med 2011
+# Drug-disease gene expression profile similarity analysis
+## From Butte et. al., Sci Transl Med 2011
 
 ```{r start time, echo=FALSE}
 begin.time <- Sys.time()
@@ -11,16 +11,18 @@ Load required packages and source necessary functions.
 
 ```{r initialize, echo=TRUE}
 library("GEOquery") # For pulling data from GEO
-library("siggenes") # For running SAM analysis
+library("limma") # For running limma - getting list of differentially expressed genes
 library("affyPLM") # For rank normalization of ExpressionSets
 library("cMap2data") # For drug signature ranked lists
 source("butte_helper.R") # Helper functions for analysis
 data(drugRL) # Load the drug ranked list data from cMap
 ```
 
+## Disease Differential Expression Modeling
+
 We get the list of up- and down-regulated genes via limma analysis of each specified dataset.
 
-```{r get gene lists, echo=TRUE}
+```{r get gene lists, echo=TRUE,warning=FALSE}
 glist <- list()
 for(i in 1:length(ids)){
 	glist[[i]] <- get_gene_list(ids[i])
@@ -28,17 +30,19 @@ for(i in 1:length(ids)){
 names(glist) <- ids
 ```
 
+## Comparison with Drug Gene Expression
+
 We now know which genes are up- and down-regulated, and rank them by fold change in expression.
 Using this ranking, we compare each disease signature to each drug signature. We also calculate
 a p-value and FDR for the observed drug disease score.
 
 ```{r calculate dds, echo=TRUE}
-ddsmat <- pvals <- qvals <- matrix(0,ndrug,length(glist),dimnames=c(colnames(drugRL)[1:ndrug],names(glist))
+ddsmat <- pvals <- qvals <- matrix(0,ndrug,length(glist),dimnames=list(colnames(drugRL)[1:ndrug],names(glist)))
 
-for(i in 1:ndrug){
-	for(j in 1:length(glist)){
-		ddsmat[i,j] <- calc_dds(drugRL[,i],glist[[j]])
-		pvals[i,j] <- calc_pval(glist[[j]],rownames(drugRL),ddsmat[i,j])
+for(i in 1:length(glist)){
+	for(j in 1:ndrug){
+		ddsmat[j,i] <- calc_dds(drugRL[,j],glist[[i]])
+		pvals[j,i] <- calc_pval(glist[[i]],rownames(drugRL),ddsmat[i,j])
 	}
 	# Get FDR for each pval
 	qvals[,i] <- qvalue(pvals[,i], lambda=0) #B-H correction, for safety
@@ -56,14 +60,6 @@ heatmap(ddsmat)
 ```{r session info}
 sessionInfo()
 ```
-
-SHA-1 hashes for the input data file and the original data frame.
-
-```{r hash information, echo=FALSE}
-cat(sprintf("%s: %s\n", sQuote(datafile), hashfile))
-cat(sprintf("data frame: %s\n", hashdframe))
-```
-
 
 This analysis started on `r format(begin.time)` and was completed on
 `r format(Sys.time())`.
